@@ -11,7 +11,7 @@
   ],
   "require": {
     "php": ">=5.5",
-    "queue/queue": "dev-master",
+    "queue/queue": "^0.1",
     "videlalvaro/php-amqplib": "^2.5"
   },
   "require-dev": {
