@@ -48,7 +48,9 @@ class IntegrationTest extends \PHPUnit_Framework_TestCase
     public function testAddJob()
     {
         $driver = new RabbitMQDriver($this->getConnection());
-        $driver->addJob(new Job('test', ['callback' => [self::class, 'jobCallback']]));
+
+        $queue = new Queue($driver);
+        $queue->addJob(new Job('test', ['callback' => [self::class, 'jobCallback']]));
 
         $logger = $this->getMockBuilder(LoggerInterface::class)
             ->getMock();
@@ -64,7 +66,7 @@ class IntegrationTest extends \PHPUnit_Framework_TestCase
                 }
             }));
 
-        $worker = new Worker(new Queue($driver), new CallbackExecutor(), 1);
+        $worker = new Worker($queue, new CallbackExecutor(), 1);
         $worker->setLogger($logger);
         $worker->run();
     }

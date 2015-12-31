@@ -38,26 +38,26 @@ class RabbitMQDriver implements DriverInterface
         $this->serializer = new JobSerializer();
     }
 
-    public function addJob(JobInterface $job)
+    public function addJob($queueName, JobInterface $job)
     {
         $this->amqpStreamConnection
             ->channel()
-            ->queue_declare('worker_queue');
+            ->queue_declare($queueName);
 
         $this->amqpStreamConnection
             ->channel()
-            ->basic_publish($this->serializer->serialize($job), '', 'worker_queue');
+            ->basic_publish($this->serializer->serialize($job), '', $queueName);
     }
 
-    public function resolveJob()
+    public function resolveJob($queueName)
     {
         $this->amqpStreamConnection
             ->channel()
-            ->queue_declare('worker_queue');
+            ->queue_declare($queueName);
 
         $job = $this->amqpStreamConnection
             ->channel()
-            ->basic_get('worker_queue', true);
+            ->basic_get($queueName, true);
 
         if (!$job) {
             return;
@@ -66,14 +66,14 @@ class RabbitMQDriver implements DriverInterface
         return $this->serializer->unserialize($job);
     }
 
-    public function removeJob(JobInterface $job)
+    public function removeJob($queueName, JobInterface $job)
     {
         $this->amqpStreamConnection
             ->channel()
             ->basic_ack($job->getData()['_delivery_tag']);
     }
 
-    public function buryJob(JobInterface $job)
+    public function buryJob($queueName, JobInterface $job)
     {
         $this->amqpStreamConnection
             ->channel()
